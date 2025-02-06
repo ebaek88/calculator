@@ -64,11 +64,12 @@ class Calculator {
 
 function renderButtonsFunctional(calculatorInstance) {
   const numbers = document.querySelectorAll(".numeric");
-  for (const number of numbers) {
-    number.addEventListener("click", () =>
-      calculatorInstance.setDigitalInput(number.textContent)
-    );
-  }
+  numbers.forEach( (number) => {
+    number.addEventListener("click", () => {
+      calculatorInstance.setDigitInput(number.textContent);
+      // console.log(calculatorInstance.getDigitInput());
+    });
+  });
 }
 
 function main() {

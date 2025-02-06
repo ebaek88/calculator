@@ -1,5 +1,3 @@
-// operator and its corresponding function
-
 class Calculator {
   static #numerical = "1234567890";
   #op1;
@@ -25,30 +23,34 @@ class Calculator {
   }
 
   // getters and setters
-  getTakeInput() {
+  // all methods are listed as class fields so that there won't be confusion over "this" within the method body
+  // https://ko.javascript.info/class#ref-482
+  getTakeInput = () => {
     return this.#takeInput;
-  }
+  };
 
-  setTakeInput(boolean) {
+  setTakeInput = (boolean) => {
     this.#takeInput = boolean;
-  }
+  };
 
-  getDigitInput() {
+  getDigitInput = () => {
     return this.#digitInput;
-  }
+  };
 
-  setDigitInput(value) {
+  setDigitInput = (value) => {
     if (Calculator.#numerical.includes(value)) {
       this.#digitInput = value;
     }
-  }
+  };
 
   // take input for an operand
-  enterInput(operand) {
-    while (this.#takeInput) {}
-  }
+  enterInput = (operand) => {
+    if (this.#takeInput) {
+      operand += this.getDigitInput();
+    }
+  };
 
-  operate(op1, op2, op) {
+  operate = (op1, op2, op) => {
     try {
       if (!operators[op]) {
         throw new Error("The operator does not exist in this calculator.");
@@ -57,5 +59,22 @@ class Calculator {
     } catch (e) {
       console.log(e.message);
     }
+  };
+}
+
+function renderButtonsFunctional(calculatorInstance) {
+  const numbers = document.querySelectorAll(".numeric");
+  for (const number of numbers) {
+    number.addEventListener("click", () =>
+      calculatorInstance.setDigitalInput(number.textContent)
+    );
   }
 }
+
+function main() {
+  const calculator = new Calculator();
+
+  renderButtonsFunctional(calculator);
+}
+
+main();

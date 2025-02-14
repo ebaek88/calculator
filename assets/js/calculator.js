@@ -1,10 +1,12 @@
 class Calculator {
-  static numerical = "1234567890.";
+  static numerical = "1234567890";
+  static operator = "+-*/";
   #op1;
   #op2;
   #op;
   #stack;
   #continueInput; // if false, write over the display, if true, continue writing on the display
+  #decimalUsed; // decimal button can be clicked only when it is false
 
   constructor() {
     this.operators = {
@@ -19,6 +21,7 @@ class Calculator {
     this.#op = "";
     this.#stack = [];
     this.#continueInput = false;
+    this.#decimalUsed = false;
   }
 
   // clear the display
@@ -43,6 +46,10 @@ class Calculator {
         display.textContent.length - 1
       );
     }
+
+    if (!display.textContent.includes(".")) {
+      this.#decimalUsed = false;
+    }
   };
 
   // getters and setters
@@ -60,7 +67,7 @@ class Calculator {
       if (!this.operators[op]) {
         throw new Error("The operator does not exist in this calculator.");
       }
-      return this.operators[op](Number(op1), Number(op2));
+      return +this.operators[op](Number(op1), Number(op2)).toFixed(4);
     } catch (err) {
       console.log(err.message);
     }
@@ -81,6 +88,15 @@ class Calculator {
   // rendering the backspace button
   renderBackspaceButtonFunctional = () => {
     const backspace = document.querySelector("#backspace");
+
+    // adding keydonw event
+    document.addEventListener("keydown", (evt) => {
+      if (evt.key === "Backspace") {
+        this.deleteDigit();
+      }
+    });
+
+    // adding click event
     backspace.addEventListener("click", this.deleteDigit);
   };
 
@@ -113,14 +129,31 @@ class Calculator {
   // rendering the number buttons
   renderNumericButtonsFunctional = () => {
     const numbers = document.querySelectorAll(".numeric");
+    const display = document.querySelector(".display");
+
+    // adding keydown events
+    document.addEventListener("keydown", (evt) => {
+      if (Calculator.numerical.includes(evt.key) && this.#stack.length !== 1) {
+        if (!this.#continueInput) {
+          display.textContent = evt.key;
+        } else {
+          display.textContent += evt.key;
+        }
+      }
+      this.#continueInput = true;
+    });
+
+    // adding click events
     numbers.forEach((number) => {
       number.addEventListener("click", () => {
-        const currentDisplay = document.querySelector(".display");
-        if (Calculator.numerical.includes(number.textContent)) {
+        if (
+          Calculator.numerical.includes(number.textContent) &&
+          this.#stack.length !== 1 // pushing numbers consecutively in a stack is not logical
+        ) {
           if (!this.#continueInput) {
-            currentDisplay.textContent = number.textContent;
+            display.textContent = number.textContent;
           } else {
-            currentDisplay.textContent += number.textContent;
+            display.textContent += number.textContent;
           }
         }
         this.#continueInput = true;
@@ -128,10 +161,101 @@ class Calculator {
     });
   };
 
+  // rendering the decimal button, so that it can be clicked only once while entering a number
+  renderDecimalButtonFunctional = () => {
+    const decimal = document.querySelector("#decimal");
+    const display = document.querySelector(".display");
+
+    // adding keydown event
+    document.addEventListener("keydown", (evt) => {
+      if (evt.key === "." && !this.#decimalUsed && this.#stack.length !== 1) {
+        display.textContent += decimal.textContent;
+        this.#decimalUsed = true;
+        this.#continueInput = true;
+      }
+    });
+
+    // adding click events
+    decimal.addEventListener("click", () => {
+      // pushing numbers consecutively in a stack is not logical
+      if (!this.#decimalUsed && this.#stack.length !== 1) {
+        display.textContent += decimal.textContent;
+        this.#decimalUsed = true;
+        this.#continueInput = true;
+      }
+    });
+  };
+
   // rendering the operator buttons
   renderOperatorButtonsFunctional = () => {
     const operators = document.querySelectorAll(".operator");
     const display = document.querySelector(".display");
+
+    // adding keydown events
+    document.addEventListener("keydown", (evt) => {
+      if (Calculator.operator.includes(evt.key)) {
+        switch (this.#stack.length) {
+          case 0:
+            this.takeInput();
+            this.#stack.push(evt.key);
+            break;
+          case 1:
+            this.#stack.pop();
+            this.#stack.push(display.textContent);
+            this.#stack.push(evt.key);
+            break;
+          case 2:
+            // check if this.#continueInput is false, because when the operator is clicked right after the first operator is clicked, it just
+            // updates the operator
+            // otherwise, takeInput then operate
+            if (!this.#continueInput) {
+              this.#stack.pop();
+              this.#stack.push(evt.key);
+            } else {
+              this.takeInput();
+              this.#op2 = this.#stack.pop();
+              this.#op = this.#stack.pop();
+              this.#op1 = this.#stack.pop();
+              if (this.#op === "/" && this.#op2 === 0) {
+                this.#stack.push(this.#op1);
+                alert(
+                  "You cannot divide by 0. Please choose another operator or a divisor that is not 0."
+                );
+                display.textContent = this.#op1;
+                break;
+              }
+              const result = this.operate(this.#op1, this.#op2, this.#op);
+              this.#stack.push(result);
+              display.textContent = result;
+              this.#stack.push(evt.key);
+            }
+            break;
+          default: // when the stack is full(op1, op, op2) or when there is one operand is in the stack already and
+            // an operator and another operand is ready to go into the stack
+            this.#op2 = this.#stack.pop();
+            this.#op = this.#stack.pop();
+            this.#op1 = this.#stack.pop();
+            if (this.#op === "/" && this.#op2 === 0) {
+              this.#stack.push(this.#op1);
+              alert(
+                "You cannot divide by 0. Please choose another operator or a divisor that is not 0."
+              );
+              display.textContent = this.#op1;
+              break;
+            }
+            const result = this.operate(this.#op1, this.#op2, this.#op);
+            this.#stack.push(result);
+            // display result?
+            display.textContent = result;
+            this.#stack.push(evt.key);
+            break;
+        }
+        this.#continueInput = false;
+        this.#decimalUsed = false;
+      }
+    });
+
+    // adding click events
     operators.forEach((operator) => {
       operator.addEventListener("click", (e) => {
         switch (this.#stack.length) {
@@ -191,6 +315,7 @@ class Calculator {
             break;
         }
         this.#continueInput = false;
+        this.#decimalUsed = false;
       });
     });
   };
@@ -199,6 +324,35 @@ class Calculator {
   renderEqualButtonFunctional = () => {
     const equal = document.querySelector("#equal");
     const display = document.querySelector(".display");
+
+    // adding keydown events
+    document.addEventListener("keydown", (evt) => {
+      if (
+        (evt.key === "=" || evt.key === "Enter") &&
+        this.#stack.length === 2 &&
+        this.#continueInput === true
+      ) {
+        this.takeInput();
+        this.#op2 = this.#stack.pop();
+        this.#op = this.#stack.pop();
+        this.#op1 = this.#stack.pop();
+        if (this.#op === "/" && this.#op2 === 0) {
+          this.#stack.push(this.#op1);
+          alert(
+            "You cannot divide by 0. Please choose another operator or a divisor that is not 0."
+          );
+          display.textContent = this.#op1;
+          return;
+        }
+        const result = this.operate(this.#op1, this.#op2, this.#op);
+        display.textContent = result;
+        this.#stack.push(result);
+        this.#continueInput = false;
+        this.#decimalUsed = false;
+      }
+    });
+
+    // adding click events
     equal.addEventListener("click", () => {
       if (this.#stack.length === 2 && this.#continueInput === true) {
         this.takeInput();
@@ -216,6 +370,8 @@ class Calculator {
         const result = this.operate(this.#op1, this.#op2, this.#op);
         display.textContent = result;
         this.#stack.push(result);
+        this.#continueInput = false;
+        this.#decimalUsed = false;
       }
     });
   };
@@ -228,7 +384,8 @@ function main() {
   // render the number buttons
   calculator.renderNumericButtonsFunctional();
 
-  // clear the display and the stock
+  calculator.renderDecimalButtonFunctional();
+
   calculator.renderAllClearButtonFunctional();
 
   calculator.renderBackspaceButtonFunctional();

@@ -20,8 +20,7 @@ h1 {
 .calculator-body {
   margin: 0;
   padding: 0;
-  border: solid black 1.5px;
-  width: 70%;
+  width: 50%;
   background-color: darkgray;
   display: flex;
   flex-direction: column;
@@ -46,29 +45,41 @@ h1 {
   margin: 16px;
 }
 
-.calculator-body > * > * {
+button {
   margin: 0;
   padding: 0;
-  border: solid black 1.5px;
+  /* border: solid black 1.5px; */
   flex: 1;
   aspect-ratio: 1 / 1;
   background-color: rgb(255 255 255 / 0);
   border-radius: 50%;
+  box-shadow: 0 12px #999;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+button:active {
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
 }
 
 .numeric,
 .operator,
+#decimal,
 #change-sign,
 #all-clear,
 #equal {
-  font-size: 2rem;
-}
-
-.numeric {
-  background-color: rgb(201, 135, 11);
+  font-size: 2.5rem;
 }
 
 .operator,
 .special-button {
   background-color: rgb(106, 162, 181);
+}
+
+.numeric,
+#decimal {
+  background-color: rgb(201, 135, 11);
 }

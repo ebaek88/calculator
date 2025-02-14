@@ -84,6 +84,32 @@ class Calculator {
     backspace.addEventListener("click", this.deleteDigit);
   };
 
+  // rendering +/- button. +/- button changes the sign to negative if positive and vice versa
+  renderChangeSignButtonFunctional = () => {
+    const changeSign = document.querySelector("#change-sign");
+    let display = document.querySelector(".display");
+    changeSign.addEventListener("click", () => {
+      if (this.#continueInput === true) {
+        if (display.textContent[0] === "-") {
+          let temp = display.textContent.slice(1);
+          display.textContent = temp;
+        } else {
+          let temp = display.textContent;
+          display.textContent = "-" + temp;
+        }
+      }
+    });
+  };
+
+  // rendering the random integer button. It display an integer between 0 and 99999
+  renderRandomIntButtonFunctional = () => {
+    const rand = document.querySelector("#random-int");
+    const display = document.querySelector(".display");
+    rand.addEventListener("click", () => {
+      display.textContent = Math.floor(Math.random() * 100000);
+    });
+  };
+
   // rendering the number buttons
   renderNumericButtonsFunctional = () => {
     const numbers = document.querySelectorAll(".numeric");
@@ -119,7 +145,7 @@ class Calculator {
             this.#stack.push(e.target.textContent);
             break;
           case 2:
-            // check if display is "". because when the operator is clicked right after the first operator is clicked, it just
+            // check if this.#continueInput is false, because when the operator is clicked right after the first operator is clicked, it just
             // updates the operator
             // otherwise, takeInput then operate
             if (!this.#continueInput) {
@@ -130,6 +156,14 @@ class Calculator {
               this.#op2 = this.#stack.pop();
               this.#op = this.#stack.pop();
               this.#op1 = this.#stack.pop();
+              if (this.#op === "/" && this.#op2 === 0) {
+                this.#stack.push(this.#op1);
+                alert(
+                  "You cannot divide by 0. Please choose another operator or a divisor that is not 0."
+                );
+                display.textContent = this.#op1;
+                break;
+              }
               const result = this.operate(this.#op1, this.#op2, this.#op);
               this.#stack.push(result);
               display.textContent = result;
@@ -141,6 +175,14 @@ class Calculator {
             this.#op2 = this.#stack.pop();
             this.#op = this.#stack.pop();
             this.#op1 = this.#stack.pop();
+            if (this.#op === "/" && this.#op2 === 0) {
+              this.#stack.push(this.#op1);
+              alert(
+                "You cannot divide by 0. Please choose another operator or a divisor that is not 0."
+              );
+              display.textContent = this.#op1;
+              break;
+            }
             const result = this.operate(this.#op1, this.#op2, this.#op);
             this.#stack.push(result);
             // display result?
@@ -163,6 +205,14 @@ class Calculator {
         this.#op2 = this.#stack.pop();
         this.#op = this.#stack.pop();
         this.#op1 = this.#stack.pop();
+        if (this.#op === "/" && this.#op2 === 0) {
+          this.#stack.push(this.#op1);
+          alert(
+            "You cannot divide by 0. Please choose another operator or a divisor that is not 0."
+          );
+          display.textContent = this.#op1;
+          return;
+        }
         const result = this.operate(this.#op1, this.#op2, this.#op);
         display.textContent = result;
         this.#stack.push(result);
@@ -182,6 +232,10 @@ function main() {
   calculator.renderAllClearButtonFunctional();
 
   calculator.renderBackspaceButtonFunctional();
+
+  calculator.renderChangeSignButtonFunctional();
+
+  calculator.renderRandomIntButtonFunctional();
 
   calculator.renderOperatorButtonsFunctional();
 

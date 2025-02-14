@@ -397,20 +397,6 @@ function main() {
   calculator.renderOperatorButtonsFunctional();
 
   calculator.renderEqualButtonFunctional();
-
-  // take the input for op1 only when the stack is empty
-
-  // push op1 to the stack
-
-  // take the input for the operator
-
-  // push op to the stack
-
-  // take the input for op2 only when op1 and op are already in the stack
-
-  // when the operator button is clicked, calculate the result
-
-  // push the result to the stack
 }
 
 main();
